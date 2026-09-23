@@ -13,8 +13,6 @@ public interface CheckInRepository extends JpaRepository<CheckIn, Long> {
 
     Optional<CheckIn> findByOrganizationIdAndOutClientId(Long organizationId, String outClientId);
 
-    List<CheckIn> findByOrganizationIdAndCheckedOutAtIsNull(Long organizationId);
-
     List<CheckIn> findByOrganizationIdAndCheckedInAtBetweenOrderByCheckedInAtAsc(Long organizationId, Instant from, Instant to);
 
     List<CheckIn> findByOrganizationIdAndCheckedOutAtBetween(Long organizationId, Instant from, Instant to);

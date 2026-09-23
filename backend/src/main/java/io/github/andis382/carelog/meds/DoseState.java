@@ -21,8 +21,4 @@ public enum DoseState {
             case REFUSED -> REFUSED;
         };
     }
-
-    public boolean isOpen() {
-        return this == UPCOMING || this == DUE || this == LATE || this == MISSED;
-    }
 }

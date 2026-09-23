@@ -16,7 +16,5 @@ public interface ShiftSwapRepository extends JpaRepository<ShiftSwap, Long> {
 
     boolean existsByShiftIdAndStatus(Long shiftId, ShiftSwap.Status status);
 
-    List<ShiftSwap> findByOrganizationIdAndCreatedAtAfterOrderByCreatedAtDesc(Long organizationId, Instant after);
-
     List<ShiftSwap> findByOrganizationIdAndRespondedAtBetween(Long organizationId, Instant from, Instant to);
 }

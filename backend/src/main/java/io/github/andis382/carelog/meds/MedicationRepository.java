@@ -8,7 +8,5 @@ public interface MedicationRepository extends JpaRepository<Medication, Long> {
 
     List<Medication> findByOrganizationIdOrderByNameAsc(Long organizationId);
 
-    List<Medication> findByOrganizationIdAndActiveTrueOrderByNameAsc(Long organizationId);
-
     Optional<Medication> findByIdAndOrganizationId(Long id, Long organizationId);
 }

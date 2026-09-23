@@ -69,15 +69,6 @@ public class CircleService {
         return visible != null && (from == null || from.isBefore(visible)) ? visible : from;
     }
 
-    public Instant clampFrom(Long organizationId, Instant from) {
-        LocalDate visible = visibleFrom(organizationId);
-        if (visible == null) {
-            return from;
-        }
-        Instant limit = visible.atStartOfDay(time.zone(organizationId)).toInstant();
-        return from == null || from.isBefore(limit) ? limit : from;
-    }
-
     /** A new join link counts as a seat: members plus open invitations must fit the plan. */
     public void requireSeatForInvite(Long organizationId) {
         Instant now = time.now();
