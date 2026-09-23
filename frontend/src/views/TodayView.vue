@@ -621,6 +621,8 @@ async function toggleCheckIn() {
 .meds__count {
   font-size: var(--text-sm);
   font-weight: 650;
+  /* same height as the card icon, so the count sits level with the title */
+  line-height: 38px;
   color: var(--text-muted);
   white-space: nowrap;
 }
