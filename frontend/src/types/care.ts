@@ -70,7 +70,7 @@ export type JournalEntry = {
   at: string
 }
 
-export type Duty = { userId: number; name: string; start: string; end: string; kind: ShiftKind; now: boolean }
+export type Duty = { userId: number; name: string; start: string; end: string; kind: ShiftKind; now: boolean; arrivedAt: string | null }
 
 export type Appointment = {
   date: string

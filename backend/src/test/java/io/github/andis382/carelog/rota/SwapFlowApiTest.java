@@ -95,6 +95,24 @@ class SwapFlowApiTest extends CircleTest {
     }
 
     @Test
+    void theDailyCardShowsWhoIsOnDutyAndWhenTheyArrived() throws Exception {
+        postJson(elira, "/api/shifts", """
+            {"userId":%d,"date":"%s","start":"00:00","end":"23:59","kind":"DAY"}
+            """.formatted(userId(mira), today())).andExpect(status().isCreated());
+
+        getJson(elira, "/api/today")
+            .andExpect(jsonPath("$.duty[0].name").value("Mira Hasani"))
+            .andExpect(jsonPath("$.duty[0].now").value(true))
+            .andExpect(jsonPath("$.duty[0].arrivedAt").doesNotExist());
+
+        postJson(mira, "/api/checkins/in", "{\"lat\":42.0689,\"lng\":19.5124,\"accuracy\":12}").andExpect(status().isOk());
+        postJson(mira, "/api/checkins/in", "{}").andExpect(status().isConflict());
+
+        getJson(elira, "/api/today").andExpect(jsonPath("$.duty[0].arrivedAt").exists());
+        getJson(mira, "/api/today").andExpect(jsonPath("$.myCheckIn.checkedInAt").exists());
+    }
+
+    @Test
     void aCarerMayAddHerOwnShiftButNotSomeoneElses() throws Exception {
         postJson(mira, "/api/shifts", """
             {"userId":%d,"date":"%s","start":"18:00","end":"21:00","kind":"VISIT"}

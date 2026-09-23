@@ -33,7 +33,8 @@ public record TodayView(
     public record ElderCard(String fullName, String firstName, Integer age, String town, String photoUrl, String conditions,
                             String allergies) {}
 
-    public record DutyView(Long userId, String name, String start, String end, String kind, boolean now) {}
+    /** A shift of the day; {@code arrivedAt} is set while that person is checked in. */
+    public record DutyView(Long userId, String name, String start, String end, String kind, boolean now, Instant arrivedAt) {}
 
     public record CheckInView(Long id, Instant checkedInAt) {}
 

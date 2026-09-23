@@ -432,6 +432,7 @@ async function toggleCheckIn() {
       <template v-if="isToday">
         <HeroChip v-if="onDuty" tone="live">
           {{ $t('today.onDutyNow') }}: <strong>{{ onDuty.name }}</strong> · <span class="num">{{ onDuty.start }}–{{ onDuty.end }}</span>
+          <template v-if="onDuty.arrivedAt"> · {{ $t('today.arrived', { time: formatTime(onDuty.arrivedAt) }) }}</template>
         </HeroChip>
         <HeroChip v-else :icon="PhHandHeart">
           {{ nextDuty ? $t('today.nextOnDuty', { name: nextDuty.name, time: nextDuty.start }) : $t('today.nobodyOnDuty') }}

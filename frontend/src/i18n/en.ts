@@ -178,6 +178,7 @@ const en = {
     nextDay: 'Next day',
     age: '{age} years',
     onDutyNow: 'On duty now',
+    arrived: 'arrived {time}',
     nobodyOnDuty: 'Nobody on duty right now',
     nextOnDuty: 'Next: {name} at {time}',
     checkIn: 'I am here',

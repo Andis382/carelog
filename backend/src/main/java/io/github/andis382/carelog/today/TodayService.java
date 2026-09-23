@@ -21,6 +21,7 @@ import io.github.andis382.carelog.meds.DoseTimeline;
 import io.github.andis382.carelog.meds.Frequency;
 import io.github.andis382.carelog.meds.Medication;
 import io.github.andis382.carelog.meds.MedicationRepository;
+import io.github.andis382.carelog.rota.CheckIn;
 import io.github.andis382.carelog.rota.CheckInService;
 import io.github.andis382.carelog.rota.RotaService;
 import io.github.andis382.carelog.rota.Shift;
@@ -54,6 +55,7 @@ import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 
 /** Assembles the daily card: medicines, duty, vitals, meals, mood and notes for one day. */
@@ -153,9 +155,11 @@ public class TodayService {
                 .filter(s -> shifts.stream().noneMatch(listed -> listed.getId().equals(s.getId())))
                 .forEach(s -> shifts.add(0, s));
         }
+        Map<Long, Instant> arrived = checkIns.openIn(orgId).stream()
+            .collect(Collectors.toMap(CheckIn::getUserId, CheckIn::getCheckedInAt, (a, b) -> a));
         return shifts.stream()
             .map(s -> new DutyView(s.getUserId(), names.get(s.getUserId()), HH_MM.format(s.getStartTime()),
-                HH_MM.format(s.getEndTime()), s.getKind().name(), s.covers(now)))
+                HH_MM.format(s.getEndTime()), s.getKind().name(), s.covers(now), s.covers(now) ? arrived.get(s.getUserId()) : null))
             .toList();
     }
 

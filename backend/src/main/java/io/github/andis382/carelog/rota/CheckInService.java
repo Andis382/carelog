@@ -4,6 +4,7 @@ import io.github.andis382.carelog.circle.CircleTime;
 import io.github.andis382.carelog.common.ApiException;
 import io.github.andis382.carelog.rota.CheckIn.Position;
 import java.time.Instant;
+import java.util.List;
 import java.util.Optional;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -50,6 +51,11 @@ public class CheckInService {
 
     public Optional<CheckIn> open(Long userId) {
         return checkIns.findByUserIdAndCheckedOutAtIsNull(userId);
+    }
+
+    /** Everyone in the circle who is checked in right now. */
+    public List<CheckIn> openIn(Long orgId) {
+        return checkIns.findByOrganizationIdAndCheckedOutAtIsNull(orgId);
     }
 
     private static boolean blank(String value) {

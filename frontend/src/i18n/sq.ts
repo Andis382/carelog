@@ -180,6 +180,7 @@ const sq: MessageSchema = {
     nextDay: 'Dita tjetër',
     age: '{age} vjeç',
     onDutyNow: 'Në detyrë tani',
+    arrived: 'mbërriti në {time}',
     nobodyOnDuty: 'Askush në detyrë tani',
     nextOnDuty: 'Më pas: {name} në {time}',
     checkIn: 'Mbërrita',
