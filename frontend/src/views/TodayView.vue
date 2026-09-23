@@ -408,7 +408,7 @@ async function toggleCheckIn() {
     if (!where) toasts.info(t('checkin.denied'))
     const res = await sync.record<{ id: number; checkedInAt: string }>(
       leaving ? '/checkins/out' : '/checkins/in',
-      { ...(where ?? {}) },
+      { ...where },
       leaving ? t('today.checkOut') : t('today.checkIn'),
     )
     data.value.myCheckIn = leaving ? null : res.queued ? { id: 0, checkedInAt: new Date().toISOString() } : res.result

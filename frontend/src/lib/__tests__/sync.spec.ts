@@ -10,6 +10,8 @@ function memoryStore() {
   }
 }
 
+type Send = (url: string, body: Record<string, unknown>) => Promise<unknown>
+
 function write(id: string, label = id): QueuedWrite {
   return { id, url: '/doses', body: { clientId: id }, label, queuedAt: '2026-09-23T08:00:00Z' }
 }
@@ -41,7 +43,7 @@ describe('WriteQueue', () => {
     const queue = new WriteQueue(memoryStore(), 'q')
     queue.add(write('a'))
     queue.add(write('b'))
-    const send = vi.fn().mockResolvedValue({})
+    const send = vi.fn<Send>().mockResolvedValue({})
 
     const result = await queue.flush(send)
 
@@ -56,7 +58,7 @@ describe('WriteQueue', () => {
     queue.add(write('a'))
     queue.add(write('b'))
     queue.add(write('c'))
-    const send = vi.fn().mockResolvedValueOnce({}).mockRejectedValueOnce(new ApiError(0, 'network'))
+    const send = vi.fn<Send>().mockResolvedValueOnce({}).mockRejectedValueOnce(new ApiError(0, 'network'))
 
     const result = await queue.flush(send)
 
@@ -70,7 +72,7 @@ describe('WriteQueue', () => {
     queue.add(write('a', 'Metformin 08:00'))
     queue.add(write('b'))
     const send = vi
-      .fn()
+      .fn<Send>()
       .mockRejectedValueOnce(new ApiError(409, 'Already given by Mira at 08:05.'))
       .mockResolvedValueOnce({})
 
@@ -85,7 +87,7 @@ describe('WriteQueue', () => {
     const queue = new WriteQueue(memoryStore(), 'q')
     queue.add(write('a'))
 
-    const result = await queue.flush(vi.fn().mockRejectedValue(new ApiError(503, 'Unavailable')))
+    const result = await queue.flush(vi.fn<Send>().mockRejectedValue(new ApiError(503, 'Unavailable')))
 
     expect(result.stopped).toBe(true)
     expect(queue.items()).toHaveLength(1)
