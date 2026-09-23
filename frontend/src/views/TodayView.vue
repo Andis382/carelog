@@ -641,6 +641,7 @@ async function toggleCheckIn() {
   .today {
     display: flex;
     flex-direction: column;
+    align-items: stretch;
   }
   .today__main,
   .today__side {

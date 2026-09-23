@@ -74,8 +74,7 @@ onMounted(load)
     </UiCard>
 
     <template v-else-if="visits">
-      <section v-if="upcoming.length" class="stack stack-sm">
-        <h2 class="group">{{ $t('visits.upcoming') }}</h2>
+      <section v-if="upcoming.length" class="stack stack-sm" :aria-label="$t('visits.upcoming')">
         <div class="upcoming">
           <article v-for="v in upcoming" :key="`n${v.id}`" class="appointment">
             <div class="appointment__date">
@@ -119,7 +118,10 @@ onMounted(load)
             </a>
           </div>
           <footer class="visit__foot">
-            <span v-if="v.nextDate" class="visit__next"><PhCalendarCheck :size="16" weight="bold" aria-hidden="true" /> {{ $t('visits.nextOn', { date: formatDate(v.nextDate) }) }}<span v-if="v.nextTime" class="num">, {{ v.nextTime }}</span></span>
+            <span v-if="v.nextDate" class="visit__next">
+              <PhCalendarCheck :size="16" weight="bold" aria-hidden="true" />
+              <span>{{ $t('visits.nextOn', { date: formatDate(v.nextDate) }) }}<template v-if="v.nextTime">, {{ v.nextTime }}</template></span>
+            </span>
             <span class="xsmall subtle">{{ $t('visits.writtenBy', { name: v.recordedBy ?? '—' }) }}</span>
           </footer>
         </article>
@@ -264,6 +266,7 @@ onMounted(load)
   width: 140px;
   height: 104px;
   object-fit: cover;
+  object-position: top;
   border-radius: var(--radius-sm);
   box-shadow: var(--shadow-md);
 }

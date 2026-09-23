@@ -50,6 +50,12 @@ const grid = computed(() => {
   return { days, times, cell }
 })
 
+/** Doses that were due in the window, and how many of them were given. */
+const tally = computed(() => {
+  const answered = (detail.value?.recent ?? []).filter((r) => !['UPCOMING', 'DUE', 'LATE'].includes(r.state))
+  return { due: answered.length, given: answered.filter((r) => r.state === 'GIVEN').length }
+})
+
 function fieldValue(change: FieldChange, value: string | null) {
   if (value === null || value === '') return t('meds.emptyValue')
   if (change.field === 'frequency') return t(`meds.frequency.${value}`)
@@ -111,6 +117,9 @@ onMounted(load)
     <div v-else-if="detail && med" class="layout">
       <div class="stack stack-lg">
         <UiCard :title="scheduled ? $t('meds.recent') : $t('meds.recentAsNeeded')" :icon="PhCalendarCheck">
+          <template v-if="grid && tally.due" #actions>
+            <span class="tally num">{{ $t('summary.dosesOf', { given: tally.given, due: tally.due }) }}</span>
+          </template>
           <template v-if="grid">
             <div v-if="grid.times.length" class="grid-wrap">
               <table class="dosegrid">
@@ -130,7 +139,7 @@ onMounted(load)
                       <span
                         v-if="grid.cell(day, time)"
                         class="dosegrid__cell"
-                        :class="`dosegrid__cell--${doseTone(grid.cell(day, time)!.state)}`"
+                        :class="`dosegrid__cell--${grid.cell(day, time)!.state.toLowerCase()}`"
                         :title="cellTitle(grid.cell(day, time))"
                         role="img"
                         :aria-label="`${formatDate(day, 'short')} ${time}: ${cellTitle(grid.cell(day, time))}`"
@@ -142,7 +151,7 @@ onMounted(load)
               </table>
               <div class="legend">
                 <span v-for="s in legend" :key="s" class="legend__item">
-                  <span class="dosegrid__cell" :class="`dosegrid__cell--${doseTone(s)}`" aria-hidden="true" />
+                  <span class="dosegrid__cell" :class="`dosegrid__cell--${s.toLowerCase()}`" aria-hidden="true" />
                   {{ $t(`doses.state.${s}`) }}
                 </span>
               </div>
@@ -228,6 +237,15 @@ onMounted(load)
 .grid-wrap {
   overflow-x: auto;
 }
+.tally {
+  padding: 3px 10px;
+  border-radius: var(--radius-pill);
+  background: var(--success-soft);
+  color: var(--success-text);
+  font-size: var(--text-sm);
+  font-weight: 700;
+  white-space: nowrap;
+}
 .dosegrid {
   width: auto;
   border-collapse: separate;
@@ -259,26 +277,53 @@ onMounted(load)
   border-radius: 8px;
   background: var(--gray-200);
 }
-.dosegrid__cell--success {
+.dosegrid__cell--given {
   background: linear-gradient(180deg, var(--brand-400), var(--success));
 }
-.dosegrid__cell--warning {
-  background: var(--warning);
+.dosegrid__cell--refused {
+  background: linear-gradient(180deg, var(--accent-300), var(--accent-500));
 }
-.dosegrid__cell--danger {
+.dosegrid__cell--skipped {
+  background: repeating-linear-gradient(135deg, var(--gray-100) 0 4px, var(--gray-300) 4px 6px);
+}
+.dosegrid__cell--missed {
   background: repeating-linear-gradient(135deg, var(--danger-soft) 0 4px, color-mix(in srgb, var(--danger) 55%, transparent) 4px 8px);
   border: 1px solid color-mix(in srgb, var(--danger) 40%, transparent);
 }
-.dosegrid__cell--accent {
-  background: var(--accent-400);
+.dosegrid__cell--late {
+  background: var(--warning-soft);
+  border: 2px solid var(--warning);
 }
-.dosegrid__cell--primary,
-.dosegrid__cell--neutral {
-  background: var(--gray-200);
+.dosegrid__cell--due {
+  background: var(--primary-soft);
+  border: 2px solid var(--primary);
+}
+.dosegrid__cell--upcoming {
+  background: var(--gray-100);
+  border: 1px solid var(--gray-200);
 }
 .dosegrid__cell--none {
   background: transparent;
   border: 1px dashed var(--gray-200);
+}
+/* Two weeks fit a phone: smaller squares, tighter spacing */
+@media (max-width: 640px) {
+  .dosegrid {
+    border-spacing: 3px;
+  }
+  .dosegrid__day {
+    min-width: 17px;
+    font-size: 10px;
+  }
+  .dosegrid__time {
+    padding-right: 4px;
+    font-size: var(--text-xs);
+  }
+  .dosegrid__cell {
+    width: 17px;
+    height: 17px;
+    border-radius: 5px;
+  }
 }
 .legend {
   display: flex;

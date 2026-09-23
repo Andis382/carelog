@@ -113,7 +113,10 @@ public class AuthController {
     public MeResponse updateMe(@Valid @RequestBody UpdateProfileRequest req) {
         User user = currentUser.user();
         user.setName(req.name().trim());
-        user.setPhone(Phones.normalize(req.phone(), props.getDefaultCountryCode()));
+        // Absent means "leave as is"; an empty string clears the number.
+        if (req.phone() != null) {
+            user.setPhone(Phones.normalize(req.phone(), props.getDefaultCountryCode()));
+        }
         if (req.locale() != null) {
             user.setLocale(req.locale());
         }

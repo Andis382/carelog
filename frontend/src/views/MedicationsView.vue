@@ -2,6 +2,7 @@
 import { computed, onMounted, ref } from 'vue'
 import { PhCaretRight, PhPill, PhPlus, PhProhibit } from '@phosphor-icons/vue'
 import AppPage from '@/components/layout/AppPage.vue'
+import HeroChip from '@/components/care/HeroChip.vue'
 import ScheduleText from '@/components/care/ScheduleText.vue'
 import UiCard from '@/components/ui/UiCard.vue'
 import UiButton from '@/components/ui/UiButton.vue'
@@ -32,6 +33,10 @@ onMounted(load)
 
 <template>
   <AppPage :title="$t('meds.title')" :subtitle="$t('meds.subtitle')">
+    <template v-if="medications?.length" #meta>
+      <HeroChip :icon="PhPill">{{ $t('meds.activeCount', { n: active.length }, active.length) }}</HeroChip>
+      <HeroChip v-if="stopped.length" :icon="PhProhibit">{{ $t('meds.stoppedCount', { n: stopped.length }, stopped.length) }}</HeroChip>
+    </template>
     <template v-if="auth.canPlan" #actions>
       <UiButton variant="inverse" size="lg" :icon="PhPlus" :to="{ name: 'medication-new' }">{{ $t('meds.add') }}</UiButton>
     </template>
@@ -55,7 +60,6 @@ onMounted(load)
       </UiCard>
 
       <section v-else class="stack stack-sm">
-        <h2 class="section-title">{{ $t('meds.active') }} <span class="count num">{{ active.length }}</span></h2>
         <div class="meds">
           <RouterLink v-for="m in active" :key="m.id" :to="{ name: 'medication', params: { id: m.id } }" class="med">
             <div class="med__main">

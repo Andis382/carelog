@@ -59,7 +59,7 @@ const pending = ref<Pending[]>([])
 const lastLink = ref<Pending | null>(null)
 
 const tabs = computed(() => [
-  { value: 'elder' as const, label: t('circle.tabs.elder'), icon: PhHeart },
+  { value: 'elder' as const, label: t('circle.tabs.elder', { name: data.value?.elder?.firstName ?? '…' }), icon: PhHeart },
   { value: 'people' as const, label: t('circle.tabs.people'), icon: PhUsersThree, count: data.value?.members.length ?? null },
   { value: 'plan' as const, label: t('circle.tabs.plan'), icon: PhCrown },
   { value: 'settings' as const, label: t('circle.tabs.settings'), icon: PhGearSix },
@@ -230,7 +230,9 @@ async function saveOrg() {
 
 <template>
   <AppPage :title="$t('circle.title')" :subtitle="$t('circle.subtitle', { name: data?.elder?.firstName ?? data?.name ?? '' })">
-    <UiTabs v-model="tab" :tabs="tabs" :label="$t('circle.title')" class="tabs" />
+    <div class="tabbar-card">
+      <UiTabs v-model="tab" :tabs="tabs" :label="$t('circle.title')" class="tabs" />
+    </div>
 
     <UiSkeleton v-if="!data" card :lines="8" />
 
@@ -281,15 +283,18 @@ async function saveOrg() {
                 <UiButton size="sm" @click="tab = 'plan'">{{ $t('log.limitAction') }}</UiButton>
               </template>
             </UiNotice>
-            <form v-else class="invite" novalidate @submit.prevent="createInvite">
+            <form v-else class="stack" novalidate @submit.prevent="createInvite">
               <UiFormErrors :errors="invite.errors.value" :message="invite.message.value" :trigger="invite.submitted.value" />
-              <UiField id="f-invite-name" :label="$t('circle.inviteName')" optional class="invite__name">
-                <template #default="{ id }"><UiInput :id="id" v-model="invite.data.name" /></template>
-              </UiField>
-              <UiField id="f-invite-role" :label="$t('circle.inviteRole')" :hint="$t(`roleHints.${invite.data.role}`)" class="invite__role">
-                <template #default="{ id }"><UiSelect :id="id" v-model="invite.data.role" :options="roleOptions" /></template>
-              </UiField>
-              <UiButton type="submit" variant="secondary" :icon="PhLinkSimple" :loading="invite.processing.value">{{ $t('circle.createLink') }}</UiButton>
+              <div class="invite">
+                <UiField id="f-invite-name" :label="$t('circle.inviteName')" optional class="invite__name">
+                  <template #default="{ id }"><UiInput :id="id" v-model="invite.data.name" /></template>
+                </UiField>
+                <UiField id="f-invite-role" :label="$t('circle.inviteRole')" class="invite__role">
+                  <template #default="{ id }"><UiSelect :id="id" v-model="invite.data.role" :options="roleOptions" /></template>
+                </UiField>
+                <UiButton type="submit" variant="secondary" :icon="PhLinkSimple" :loading="invite.processing.value">{{ $t('circle.createLink') }}</UiButton>
+              </div>
+              <p class="small muted">{{ $t(`roleHints.${invite.data.role}`) }}</p>
             </form>
 
             <div v-if="pending.length" class="stack stack-sm">
@@ -322,12 +327,20 @@ async function saveOrg() {
               </li>
             </ul>
             <UiBadge v-if="data.plan === plan" tone="primary">{{ $t('circle.currentPlan') }}</UiBadge>
-            <UiButton v-else-if="auth.isOwner" :variant="plan === 'FAMILY' ? 'primary' : 'secondary'" :loading="planBusy" @click="setPlan(plan)">
-              {{ $t('circle.switchTo', { plan: $t(`circle.plan${plan === 'FREE' ? 'Free' : 'Family'}`) }) }}
-            </UiButton>
+            <template v-else-if="auth.isOwner">
+              <UiButton
+                :variant="plan === 'FAMILY' ? 'primary' : 'secondary'"
+                :loading="planBusy"
+                :disabled="plan === 'FREE' && data.members.length > 2"
+                @click="setPlan(plan)"
+              >
+                {{ $t('circle.switchTo', { plan: $t(`circle.plan${plan === 'FREE' ? 'Free' : 'Family'}`) }) }}
+              </UiButton>
+              <p v-if="plan === 'FREE' && data.members.length > 2" class="xsmall muted">{{ $t('circle.freeTooMany') }}</p>
+            </template>
           </article>
         </div>
-        <UiCard :title="$t('circle.payerLabel')" :icon="PhCrown">
+        <UiCard :title="$t('circle.payerTitle')" :icon="PhCrown">
           <div class="payer">
             <UiField id="f-payer" :label="$t('circle.payerLabel')" class="payer__field">
               <template #default="{ id }">
@@ -416,6 +429,13 @@ async function saveOrg() {
 </template>
 
 <style scoped>
+.tabbar-card {
+  padding: 8px 12px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm), var(--highlight);
+}
 .tabs {
   overflow-x: auto;
   scrollbar-width: none;
@@ -456,9 +476,6 @@ async function saveOrg() {
 .invite__name,
 .invite__role {
   flex: 1 1 220px;
-}
-.invite > :first-child {
-  flex-basis: 100%;
 }
 .pending {
   display: flex;

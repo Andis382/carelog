@@ -12,6 +12,9 @@ import io.github.andis382.carelog.circle.ElderRepository;
 import io.github.andis382.carelog.circle.EmergencyContact;
 import io.github.andis382.carelog.circle.Plan;
 import io.github.andis382.carelog.config.AppProperties;
+import java.time.Clock;
+import java.time.Duration;
+import java.time.Instant;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.ApplicationArguments;
@@ -42,9 +45,10 @@ public class DemoSeeder implements ApplicationRunner {
     private final CircleService circle;
     private final DemoHistory history;
     private final PasswordEncoder encoder;
+    private final Clock clock;
 
     public DemoSeeder(AppProperties props, OrganizationRepository organizations, UserRepository users, ElderRepository elders,
-                      CircleService circle, DemoHistory history, PasswordEncoder encoder) {
+                      CircleService circle, DemoHistory history, PasswordEncoder encoder, Clock clock) {
         this.props = props;
         this.organizations = organizations;
         this.users = users;
@@ -52,6 +56,7 @@ public class DemoSeeder implements ApplicationRunner {
         this.circle = circle;
         this.history = history;
         this.encoder = encoder;
+        this.clock = clock;
     }
 
     @Override
@@ -66,10 +71,11 @@ public class DemoSeeder implements ApplicationRunner {
         organizations.save(org);
         Long orgId = org.getId();
 
-        User elira = member(orgId, "Elira Kola", DEMO_EMAIL, Role.OWNER, "en", "355692041187");
-        User gent = member(orgId, "Gent Kola", "gent@carelog.test", Role.FAMILY, "sq", "355682234518");
-        User mira = member(orgId, "Mira Hasani", "mira@carelog.test", Role.CARER, "sq", "355673109254");
-        member(orgId, "Arta Marku", "arta@carelog.test", Role.VIEWER, "sq", "355698770431");
+        Instant now = clock.instant();
+        User elira = member(orgId, "Elira Kola", DEMO_EMAIL, Role.OWNER, "en", "355692041187", now.minus(Duration.ofDays(1)));
+        User gent = member(orgId, "Gent Kola", "gent@carelog.test", Role.FAMILY, "sq", "355682234518", now.minus(Duration.ofHours(9)));
+        User mira = member(orgId, "Mira Hasani", "mira@carelog.test", Role.CARER, "sq", "355673109254", now.minus(Duration.ofHours(15)));
+        member(orgId, "Arta Marku", "arta@carelog.test", Role.VIEWER, "sq", "355698770431", now.minus(Duration.ofDays(3)));
 
         CircleSettings settings = circle.start(orgId, elira);
         settings.setPlan(Plan.FAMILY);
@@ -92,10 +98,11 @@ public class DemoSeeder implements ApplicationRunner {
         log.info("Demo circle ready. Sign in with {} / {} (also gent@, mira@, arta@carelog.test)", DEMO_EMAIL, DEMO_PASSWORD);
     }
 
-    private User member(Long orgId, String name, String email, Role role, String locale, String phone) {
+    private User member(Long orgId, String name, String email, Role role, String locale, String phone, Instant lastSeen) {
         User user = new User(orgId, name, email, encoder.encode(DEMO_PASSWORD), role);
         user.setLocale(locale);
         user.setPhone(phone);
+        user.setLastLoginAt(lastSeen);
         return users.save(user);
     }
 }

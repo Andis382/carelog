@@ -357,12 +357,18 @@ async function answer(swapId: number, action: 'accept' | 'decline' | 'cancel') {
 </template>
 
 <style scoped>
+/* Tabs and week navigation on a white bar, so they read above the dark band */
 .bar {
   display: flex;
   align-items: center;
   justify-content: space-between;
   flex-wrap: wrap;
   gap: 12px;
+  padding: 10px 12px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm), var(--highlight);
 }
 .weeknav {
   display: flex;

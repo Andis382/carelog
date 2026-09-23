@@ -305,8 +305,13 @@ class DemoHistory {
         for (LocalDate d = first; !d.isAfter(today); d = d.plusDays(1)) {
             for (DoseSlot slot : DoseSchedule.forDay(meds.all(), d, zone)) {
                 LocalDateTime at = slot.at();
-                // Today: the latest doses stay open so the daily card shows what is due right now.
+                // The last hour and a quarter stays mostly open, so the daily card shows what is due
+                // right now: Metformin is already ticked, the other doses of that time are waiting.
                 if (!at.isBefore(now.minusMinutes(75))) {
+                    boolean tickedAlready = slot.medication() == meds.metformin() && at.plusMinutes(5).isBefore(now.minusMinutes(2));
+                    if (tickedAlready) {
+                        dose(orgId, slot.medication(), d, slot.time(), DoseStatus.GIVEN, null, onDuty(rota, at, p), at.plusMinutes(5));
+                    }
                     continue;
                 }
                 String key = key(slot.medication(), d, slot.time().getHour());

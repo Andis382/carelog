@@ -190,6 +190,25 @@ onMounted(load)
 .supply__status {
   flex: none;
 }
+/* The chosen status wears its colour: sage for enough, amber for low, coral for out */
+.supply--ok .supply__status :deep(.seg__opt.is-active) {
+  color: var(--success-text);
+  background: var(--success-soft);
+}
+.supply--running_low .supply__status :deep(.seg__opt.is-active) {
+  color: var(--warning-text);
+  background: var(--surface);
+  box-shadow:
+    inset 0 0 0 1px color-mix(in srgb, var(--warning) 35%, transparent),
+    var(--shadow-sm);
+}
+.supply--out .supply__status :deep(.seg__opt.is-active) {
+  color: var(--accent-soft-text);
+  background: var(--surface);
+  box-shadow:
+    inset 0 0 0 1px color-mix(in srgb, var(--accent-500) 35%, transparent),
+    var(--shadow-sm);
+}
 .supply__badge {
   font-size: var(--text-sm);
   font-weight: 650;

@@ -119,6 +119,7 @@ const photo = computed(() => str('photoUrl') || str('prescriptionUrl') || null)
 
 <template>
   <article class="item" :class="`item--${tone}`">
+    <span class="item__time num">{{ formatTime(entry.at) }}</span>
     <span class="item__icon"><component :is="icon" :size="18" weight="duotone" aria-hidden="true" /></span>
     <div class="item__body">
       <p class="item__title">
@@ -133,13 +134,10 @@ const photo = computed(() => str('photoUrl') || str('prescriptionUrl') || null)
         <img :src="photo" :alt="$t('common.photo')" loading="lazy" />
       </a>
     </div>
-    <div class="item__meta">
-      <span class="item__time num">{{ formatTime(entry.at) }}</span>
-      <span v-if="entry.by" class="item__who">
-        <UiAvatar :name="entry.by" :size="20" />
-        <span class="truncate">{{ entry.by }}</span>
-      </span>
-    </div>
+    <span v-if="entry.by" class="item__who">
+      <UiAvatar :name="entry.by" :size="22" />
+      <span class="truncate">{{ entry.by }}</span>
+    </span>
   </article>
 </template>
 
@@ -148,10 +146,10 @@ const photo = computed(() => str('photoUrl') || str('prescriptionUrl') || null)
   --tint: var(--brand-600);
   --tint-soft: var(--brand-50);
   display: grid;
-  grid-template-columns: 38px minmax(0, 1fr) auto;
+  grid-template-columns: 48px 34px minmax(0, 1fr) auto;
   gap: 12px;
   align-items: start;
-  padding: 12px 4px;
+  padding: 10px 6px;
   border-bottom: 1px solid var(--border);
 }
 .item--vitals {
@@ -183,15 +181,25 @@ const photo = computed(() => str('photoUrl') || str('prescriptionUrl') || null)
   --tint: var(--gray-500);
   --tint-soft: var(--gray-100);
 }
+.item__time {
+  padding-top: 6px;
+  font-family: var(--font-display);
+  font-size: var(--text-sm);
+  font-weight: 750;
+  color: var(--text);
+}
 .item__icon {
   display: grid;
   place-items: center;
-  width: 38px;
-  height: 38px;
+  width: 34px;
+  height: 34px;
   border-radius: var(--radius-sm);
   color: var(--tint);
   background: var(--tint-soft);
   border: 1px solid color-mix(in srgb, var(--tint) 16%, transparent);
+}
+.item__body {
+  padding-top: 5px;
 }
 .item__title {
   display: flex;
@@ -200,6 +208,7 @@ const photo = computed(() => str('photoUrl') || str('prescriptionUrl') || null)
   gap: 6px;
   font-weight: 650;
   color: var(--text);
+  line-height: 1.4;
 }
 .item__detail {
   font-size: var(--text-sm);
@@ -219,42 +228,46 @@ const photo = computed(() => str('photoUrl') || str('prescriptionUrl') || null)
   border-radius: var(--radius-sm);
   box-shadow: var(--shadow-sm);
 }
-.item__meta {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 4px;
-  max-width: 150px;
-  text-align: right;
-}
-.item__time {
-  font-family: var(--font-display);
-  font-weight: 750;
-  font-size: var(--text-sm);
-  color: var(--text);
-}
 .item__who {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  max-width: 100%;
+  gap: 7px;
+  max-width: 170px;
+  padding-top: 6px;
   font-size: var(--text-xs);
+  font-weight: 600;
   color: var(--text-muted);
 }
 @media (max-width: 640px) {
   .item {
-    grid-template-columns: 34px minmax(0, 1fr);
+    grid-template-columns: 30px minmax(0, 1fr) auto;
+    gap: 10px;
   }
   .item__icon {
-    width: 34px;
-    height: 34px;
+    grid-column: 1;
+    grid-row: 1;
+    width: 30px;
+    height: 30px;
   }
-  .item__meta {
+  .item__body {
     grid-column: 2;
-    flex-direction: row;
-    align-items: center;
-    max-width: none;
-    text-align: left;
+    grid-row: 1 / span 2;
+    padding-top: 3px;
+  }
+  .item__time {
+    grid-column: 3;
+    grid-row: 1;
+    padding-top: 4px;
+    text-align: right;
+  }
+  .item__who {
+    grid-column: 3;
+    grid-row: 2;
+    justify-self: end;
+    padding-top: 0;
+  }
+  .item__who .truncate {
+    display: none;
   }
 }
 </style>

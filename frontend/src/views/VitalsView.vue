@@ -36,7 +36,10 @@ const tabs = computed(() => VITAL_KINDS.map((k) => ({ value: k, label: t(`vitals
 const periods = computed(() => ([7, 30, 90] as const).map((n) => ({ value: n, label: t('vitals.days', { n }) })))
 const unit = computed(() => t(`vitals.units.${kind.value}`))
 const usual = computed(() => rangeLabel(history.value?.range, fmt))
+const TABLE_ROWS = 12
+const showAll = ref(false)
 const newestFirst = computed(() => [...(history.value?.readings ?? [])].reverse())
+const tableRows = computed(() => (showAll.value ? newestFirst.value : newestFirst.value.slice(0, TABLE_ROWS)))
 const clipped = computed(() => {
   const h = history.value
   return !!h?.visibleFrom && h.from === h.visibleFrom
@@ -62,6 +65,7 @@ async function load() {
 }
 
 watch([kind, days], () => {
+  showAll.value = false
   router.replace({ query: { kind: kind.value } })
   load()
 })
@@ -158,7 +162,7 @@ async function save(value1: number | null, value2: number | null, note: string) 
             </tr>
           </thead>
           <tbody>
-            <tr v-for="r in newestFirst" :key="r.id">
+            <tr v-for="r in tableRows" :key="r.id">
               <td class="nowrap num">{{ formatDateTime(r.measuredAt) }}</td>
               <td class="nowrap">
                 <span class="value num">{{ formatVital(kind, r.value1, r.value2, fmt) }}</span>
@@ -170,6 +174,11 @@ async function save(value1: number | null, value2: number | null, note: string) 
           </tbody>
         </table>
       </div>
+      <template v-if="newestFirst.length > TABLE_ROWS" #footer>
+        <UiButton variant="ghost" size="sm" @click="showAll = !showAll">
+          {{ showAll ? $t('vitals.showFewer') : $t('vitals.showAll', { n: newestFirst.length }) }}
+        </UiButton>
+      </template>
     </UiCard>
 
     <VitalDialog

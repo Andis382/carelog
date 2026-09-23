@@ -157,6 +157,16 @@ watch(selected, load)
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-sm), var(--highlight);
 }
+@media (max-width: 640px) {
+  .filters {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .filter {
+    flex: none;
+  }
+}
 .filter {
   --dot: var(--brand-500);
   display: inline-flex;
