@@ -29,6 +29,8 @@ import VitalDialog from '@/components/care/VitalDialog.vue'
 import ScorePicker from '@/components/care/ScorePicker.vue'
 import NoteComposer from '@/components/care/NoteComposer.vue'
 import JournalList from '@/components/care/JournalList.vue'
+import MealsPanel from '@/components/care/MealsPanel.vue'
+import VitalTiles from '@/components/care/VitalTiles.vue'
 import UiCard from '@/components/ui/UiCard.vue'
 import UiButton from '@/components/ui/UiButton.vue'
 import UiIconButton from '@/components/ui/UiIconButton.vue'
@@ -36,9 +38,8 @@ import UiEmpty from '@/components/ui/UiEmpty.vue'
 import UiNotice from '@/components/ui/UiNotice.vue'
 import UiSkeleton from '@/components/ui/UiSkeleton.vue'
 import UiProgress from '@/components/ui/UiProgress.vue'
-import UiSegmented from '@/components/ui/UiSegmented.vue'
 import { api, ApiError, query, type FieldErrors } from '@/lib/api'
-import { addDays, formatVital, progress, rangeLabel } from '@/lib/care'
+import { addDays, formatVital, progress } from '@/lib/care'
 import { formatDate, formatNumber, formatRelative, formatTime } from '@/lib/format'
 import { useAuth } from '@/stores/auth'
 import { useSync } from '@/stores/sync'
@@ -310,9 +311,6 @@ async function saveVital(value1: number | null, value2: number | null, note: str
 
 // ------------------------------------------------------------ meals, water, mood, notes
 
-const mealSlots: MealSlot[] = ['BREAKFAST', 'LUNCH', 'DINNER']
-const amounts = computed(() => (['ALL', 'HALF', 'LITTLE', 'NONE'] as MealAmount[]).map((a) => ({ value: a, label: t(`meals.amounts.${a}`) })))
-
 async function recordMeal(slot: MealSlot, amount: MealAmount | null | undefined) {
   if (!data.value || !amount) return
   const previous = data.value.meals[slot]
@@ -544,58 +542,11 @@ async function toggleCheckIn() {
 
       <div class="today__side">
         <UiCard v-if="isToday" :title="$t('today.vitalsTitle')" :subtitle="canRecord ? $t('today.vitalsHint') : undefined" :icon="PhHeartbeat">
-          <div class="vitals">
-            <button
-              v-for="v in data.vitals"
-              :key="v.kind"
-              type="button"
-              class="vital"
-              :class="{ 'vital--out': v.last?.position }"
-              :disabled="!canRecord"
-              @click="openVital(v.kind)"
-            >
-              <span class="vital__kind">{{ $t(`vitals.short.${v.kind}`) }}</span>
-              <span v-if="v.last" class="vital__value num">
-                {{ formatVital(v.kind, v.last.value1, v.last.value2, fmt) }}<small>{{ $t(`vitals.units.${v.kind}`) }}</small>
-              </span>
-              <span v-else class="vital__value vital__value--none">—</span>
-              <span class="vital__meta">
-                <template v-if="v.last">{{ formatRelative(v.last.measuredAt) }}</template>
-                <template v-else>{{ $t('vitals.none') }}</template>
-              </span>
-              <span v-if="rangeLabel(v.range, fmt)" class="vital__range num">{{ $t('vitals.usual', { range: rangeLabel(v.range, fmt) }) }}</span>
-              <span v-if="canRecord" class="vital__add" aria-hidden="true"><PhPlus :size="14" weight="bold" /></span>
-            </button>
-          </div>
+          <VitalTiles :vitals="data.vitals" :can-record="canRecord" @add="openVital" />
         </UiCard>
 
         <UiCard :title="$t('today.mealsTitle')" :icon="PhForkKnife">
-          <div class="meals">
-            <div v-for="slot in mealSlots" :key="slot" class="meal">
-              <div class="meal__head">
-                <span class="strong">{{ $t(`meals.slots.${slot}`) }}</span>
-                <span v-if="data.meals[slot]" class="xsmall subtle">{{ data.meals[slot]!.by }} · <span class="num">{{ formatTime(data.meals[slot]!.at) }}</span></span>
-              </div>
-              <UiSegmented
-                v-if="canRecord"
-                :model-value="data.meals[slot]?.amount ?? null"
-                :options="amounts"
-                :label="$t(`meals.slots.${slot}`)"
-                block
-                @update:model-value="(a) => recordMeal(slot, a)"
-              />
-              <p v-else class="small muted">{{ data.meals[slot] ? $t(`meals.amounts.${data.meals[slot]!.amount}`) : '—' }}</p>
-            </div>
-            <div class="water">
-              <div class="water__glasses" aria-hidden="true">
-                <span v-for="n in Math.max(8, data.glasses)" :key="n" class="water__glass" :class="{ 'is-full': n <= data.glasses }" />
-              </div>
-              <div class="water__row">
-                <p class="water__count">{{ $t('today.glasses', { n: data.glasses }, data.glasses) }}</p>
-                <UiButton v-if="canRecord" variant="soft" :icon="PhPlus" @click="addGlass">{{ $t('today.addGlass') }}</UiButton>
-              </div>
-            </div>
-          </div>
+          <MealsPanel :meals="data.meals" :glasses="data.glasses" :can-record="canRecord" @meal="recordMeal" @glass="addGlass" />
         </UiCard>
 
         <UiCard v-if="isToday" :title="$t('today.moodTitle')" :icon="PhSmiley">
@@ -610,7 +561,6 @@ async function toggleCheckIn() {
             </div>
           </div>
         </UiCard>
-
       </div>
     </div>
 
@@ -706,142 +656,6 @@ async function toggleCheckIn() {
   }
 }
 
-.vitals {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 10px;
-}
-@media (min-width: 1001px) and (max-width: 1180px) {
-  .vitals {
-    grid-template-columns: minmax(0, 1fr);
-  }
-}
-.vital {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 2px;
-  min-height: 104px;
-  padding: 12px 14px;
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  background: linear-gradient(180deg, var(--surface), var(--surface-muted));
-  color: var(--text);
-  text-align: left;
-  box-shadow: var(--shadow-xs), var(--highlight);
-  transition:
-    transform var(--duration) var(--ease),
-    box-shadow var(--duration) var(--ease),
-    border-color var(--duration) var(--ease);
-}
-.vital:hover:not(:disabled) {
-  transform: translateY(-1px);
-  border-color: var(--primary-soft-border);
-  box-shadow: var(--shadow-md), var(--highlight);
-}
-.vital:disabled {
-  cursor: default;
-}
-.vital--out {
-  border-color: color-mix(in srgb, var(--info) 28%, transparent);
-}
-.vital__kind {
-  font-size: var(--text-xs);
-  font-weight: 700;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--text-subtle);
-}
-.vital__value {
-  font-family: var(--font-display);
-  font-size: 1.55rem;
-  font-weight: 800;
-  letter-spacing: -0.02em;
-  line-height: 1.15;
-}
-.vital__value small {
-  margin-left: 4px;
-  font-family: var(--font-body);
-  font-size: var(--text-xs);
-  font-weight: 600;
-  letter-spacing: 0;
-  color: var(--text-subtle);
-}
-.vital__value--none {
-  color: var(--gray-300);
-}
-.vital__meta {
-  font-size: var(--text-xs);
-  color: var(--text-muted);
-}
-.vital__range {
-  margin-top: auto;
-  padding-top: 4px;
-  font-size: 11px;
-  color: var(--text-subtle);
-}
-.vital--out .vital__range {
-  color: var(--info-text);
-  font-weight: 600;
-}
-.vital__add {
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  display: grid;
-  place-items: center;
-  width: 24px;
-  height: 24px;
-  border-radius: 50%;
-  color: var(--primary);
-  background: var(--primary-soft);
-  border: 1px solid var(--primary-soft-border);
-}
-
-.meals {
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-}
-.meal__head {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 8px;
-  margin-bottom: 6px;
-}
-.water {
-  padding-top: 14px;
-  border-top: 1px solid var(--border);
-}
-.water__glasses {
-  display: flex;
-  gap: 6px;
-  margin-bottom: 10px;
-}
-/* Tumblers: a tapered outline, filled with water once drunk */
-.water__glass {
-  flex: 1;
-  max-width: 24px;
-  height: 32px;
-  clip-path: polygon(0 0, 100% 0, 86% 100%, 14% 100%);
-  background: linear-gradient(180deg, var(--brand-100), var(--brand-50));
-  box-shadow: inset 0 -3px 0 var(--brand-100);
-}
-.water__glass.is-full {
-  background: linear-gradient(180deg, var(--brand-50) 0 18%, var(--brand-300) 18% 24%, var(--brand-400) 24% 100%);
-}
-.water__row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-}
-.water__count {
-  font-family: var(--font-display);
-  font-weight: 750;
-}
 .scale-label {
   margin-bottom: 8px;
 }

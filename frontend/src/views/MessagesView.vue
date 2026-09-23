@@ -209,8 +209,8 @@ async function simulate() {
   padding: 10px 12px;
   font-size: var(--text-sm);
   white-space: pre-wrap;
-  background: #dcf8c6;
-  color: #1f2c1a;
+  background: var(--whatsapp-bubble);
+  color: var(--whatsapp-text);
   border-radius: var(--radius) 4px var(--radius) var(--radius);
   box-shadow: var(--shadow-xs);
 }

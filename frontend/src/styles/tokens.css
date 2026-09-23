@@ -90,6 +90,10 @@
 
   --focus-ring: color-mix(in srgb, var(--brand-500) 40%, transparent);
 
+  /* A sent WhatsApp message, as the phone shows it */
+  --whatsapp-bubble: #dcf8c6;
+  --whatsapp-text: #1f2c1a;
+
   /* One colour per person on the rota, in member order */
   --person-1: #3a7d68;
   --person-2: #d0694f;
