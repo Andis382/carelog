@@ -197,7 +197,7 @@ async function saveCare() {
   }
 }
 
-const profile = useForm({ name: auth.user?.name ?? '', phone: auth.user?.phone ? `+${auth.user.phone}` : '', locale: (auth.user?.locale ?? 'sq') as Locale })
+const profile = useForm({ name: auth.user?.name ?? '', phone: auth.user?.phone ? formatPhone(auth.user.phone) : '', locale: (auth.user?.locale ?? 'sq') as Locale })
 const localeOptions = [
   { value: 'sq' as Locale, label: 'Shqip' },
   { value: 'en' as Locale, label: 'English' },
@@ -359,7 +359,7 @@ async function saveOrg() {
           <form class="stack" novalidate @submit.prevent="saveCare">
             <UiFormErrors :errors="care.errors.value" :message="care.message.value" :trigger="care.submitted.value" />
             <UiField id="f-grace" :label="$t('circle.grace')">
-              <UiSegmented v-model="care.data.graceMinutes" :options="graceOptions" :label="$t('circle.grace')" />
+              <div><UiSegmented v-model="care.data.graceMinutes" :options="graceOptions" :label="$t('circle.grace')" /></div>
             </UiField>
             <UiSwitch id="f-alerts" v-model="care.data.doseAlerts" :label="$t('circle.alerts')" :hint="$t('circle.alertsHint')" />
             <UiSwitch id="f-weekly" v-model="care.data.weeklySummary" :label="$t('circle.weekly')" />

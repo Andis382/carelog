@@ -2,7 +2,7 @@
 import { computed, onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
-import { PhClock, PhFloppyDisk, PhPlus, PhX } from '@phosphor-icons/vue'
+import { PhFloppyDisk, PhPlus, PhX } from '@phosphor-icons/vue'
 import AppPage from '@/components/layout/AppPage.vue'
 import UiCard from '@/components/ui/UiCard.vue'
 import UiButton from '@/components/ui/UiButton.vue'
@@ -184,7 +184,7 @@ async function save() {
                 </button>
               </div>
               <div class="times__add">
-                <UiInput id="f-times" v-model="newTime" type="time" :icon="PhClock" class="times__input" />
+                <UiInput id="f-times" v-model="newTime" type="time" class="times__input" />
                 <UiButton variant="secondary" :icon="PhPlus" @click="addTime(newTime)">{{ $t('meds.addTime') }}</UiButton>
               </div>
             </div>

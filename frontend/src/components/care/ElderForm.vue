@@ -11,6 +11,7 @@ import UiPhotoInput from '@/components/ui/UiPhotoInput.vue'
 import UiFormErrors from '@/components/ui/UiFormErrors.vue'
 import { api } from '@/lib/api'
 import { useForm } from '@/lib/form'
+import { formatPhone } from '@/lib/format'
 import type { Contact, Elder } from '@/types/care'
 
 /**
@@ -30,12 +31,12 @@ const form = useForm({
   conditions: e?.conditions ?? '',
   allergies: e?.allergies ?? '',
   gpName: e?.gpName ?? '',
-  gpPhone: e?.gpPhone ? `+${e.gpPhone}` : '',
+  gpPhone: e?.gpPhone ? formatPhone(e.gpPhone) : '',
   photoFileId: e?.photoFileId ?? null,
   contacts: (e?.contacts.length ? e.contacts : [{ name: '', relation: '', phone: '' }]).map((c: Contact) => ({
     name: c.name,
     relation: c.relation ?? '',
-    phone: c.phone ? `+${c.phone.replace(/^\+/, '')}` : '',
+    phone: c.phone ? formatPhone(c.phone) : '',
   })),
 })
 const photo = ref<File | null>(null)
@@ -213,9 +214,12 @@ async function save() {
 }
 @media (max-width: 700px) {
   .contact {
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto;
     padding-bottom: 12px;
     border-bottom: 1px dashed var(--border-strong);
+  }
+  .contact > :nth-child(3) {
+    grid-column: 1 / 3;
   }
 }
 .actions {

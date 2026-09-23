@@ -140,6 +140,12 @@ function goToDay(day: string | undefined) {
   router.replace({ name: 'home', query: day && day !== data.value?.today ? { date: day } : {} })
 }
 
+/** A saved write says so; a queued one says it is waiting on this phone. */
+function announce(queued: boolean, text: string) {
+  if (queued) toasts.info(t('sync.queued'))
+  else toasts.success(text)
+}
+
 function problem(e: unknown) {
   toasts.error(e instanceof ApiError && e.status !== 0 ? e.message : t('errors.network'))
 }
@@ -244,8 +250,7 @@ async function giveAsNeeded(med: AsNeeded) {
   if (!(await confirm.ask({ title: t('today.giveNowTitle', { name: label }), text, confirmLabel: t('doses.give') }))) return
   try {
     const res = await sync.record<DoseResult>('/doses', { medicationId: med.medicationId, date: data.value?.date, status: 'GIVEN' }, `${label} · ${t('doses.state.GIVEN')}`)
-    if (res.queued) toasts.info(t('sync.queued'))
-    else toasts.success(t('doses.saved', { name: label }))
+    announce(res.queued, t('doses.saved', { name: label }))
     load()
   } catch (e) {
     problem(e)
@@ -291,7 +296,7 @@ async function saveVital(value1: number | null, value2: number | null, note: str
         ? { id: 0, kind, value1: value1!, value2, measuredAt: new Date().toISOString(), by: auth.user?.name ?? '', note, position: null }
         : res.result
     }
-    toasts.success(res.queued ? t('sync.queued') : t('vitals.saved', { kind: t(`vitals.kinds.${kind}`) }))
+    announce(res.queued, t('vitals.saved', { kind: t(`vitals.kinds.${kind}`) }))
     vitalOpen.value = false
   } catch (e) {
     if (e instanceof ApiError && e.status === 422) {
@@ -314,7 +319,7 @@ async function recordMeal(slot: MealSlot, amount: MealAmount | null | undefined)
   data.value.meals[slot] = { amount, by: auth.user?.name ?? '', at: new Date().toISOString() }
   try {
     const res = await sync.record('/meals', { date: data.value.date, slot, amount }, `${t(`meals.slots.${slot}`)} · ${t(`meals.amounts.${amount}`)}`)
-    toasts.success(res.queued ? t('sync.queued') : t('meals.saved', { slot: t(`meals.slots.${slot}`), amount: t(`meals.amounts.${amount}`) }))
+    announce(res.queued, t('meals.saved', { slot: t(`meals.slots.${slot}`), amount: t(`meals.amounts.${amount}`) }))
   } catch (e) {
     if (previous) data.value.meals[slot] = previous
     else delete data.value.meals[slot]
@@ -327,7 +332,7 @@ async function addGlass() {
   data.value.glasses++
   try {
     const res = await sync.record('/meals', { date: data.value.date, slot: 'DRINK', glasses: 1 }, t('meals.glassSaved'))
-    toasts.success(res.queued ? t('sync.queued') : t('meals.glassSaved'))
+    announce(res.queued, t('meals.glassSaved'))
   } catch (e) {
     data.value.glasses--
     problem(e)
@@ -342,7 +347,7 @@ async function recordScore(kind: 'MOOD' | 'PAIN', score: number) {
     const res = await sync.record('/journal', { kind, score }, `${t(`journal.kinds.${kind}`)} · ${label}`)
     if (kind === 'MOOD') data.value.mood = mark
     else data.value.pain = mark
-    toasts.success(res.queued ? t('sync.queued') : t('journal.scoreSaved', { kind: t(`journal.kinds.${kind}`), label }))
+    announce(res.queued, t('journal.scoreSaved', { kind: t(`journal.kinds.${kind}`), label }))
   } catch (e) {
     problem(e)
   }
@@ -369,7 +374,7 @@ async function saveNote(kind: JournalKind, text: string, photo: File | null) {
       : res.result
     data.value.journal = [entry, ...data.value.journal]
     composer.value?.reset()
-    toasts.success(res.queued ? t('sync.queued') : t('journal.saved'))
+    announce(res.queued, t('journal.saved'))
   } catch (e) {
     if (e instanceof ApiError && e.status === 422) noteError.value = e.errors.text?.[0] ?? e.message
     else if (photo && e instanceof ApiError && e.status === 0) toasts.error(t('common.uploadFailed'), t('errors.network'))
@@ -407,7 +412,7 @@ async function toggleCheckIn() {
       leaving ? t('today.checkOut') : t('today.checkIn'),
     )
     data.value.myCheckIn = leaving ? null : res.queued ? { id: 0, checkedInAt: new Date().toISOString() } : res.result
-    toasts.success(res.queued ? t('sync.queued') : leaving ? t('today.checkedOut') : t('today.checkedIn'))
+    announce(res.queued, leaving ? t('today.checkedOut') : t('today.checkedIn'))
   } catch (e) {
     problem(e)
     load()
