@@ -1,0 +1,14 @@
+spring:
+  datasource:
+    url: ${TEST_DB_URL:jdbc:postgresql://localhost:5432/carelog_test}
+    username: ${TEST_DB_USER:carelog}
+    password: ${TEST_DB_PASSWORD:carelog}
+
+app:
+  demo: true
+  public-url: http://localhost:5113
+  storage-dir: ./target/test-storage
+  messaging:
+    driver: log
+  ai:
+    api-key: ""
