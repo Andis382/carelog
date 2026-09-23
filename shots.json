@@ -1,0 +1,12 @@
+{
+  "email": "demo@carelog.test",
+  "password": "demo1234",
+  "pages": [
+    { "name": "login", "path": "/login", "auth": false, "desktopOnly": true },
+    { "name": "today", "path": "/", "wait": 1500 },
+    { "name": "log", "path": "/log", "wait": 1200, "desktopOnly": true },
+    { "name": "vitals", "path": "/vitals?kind=BP", "wait": 1500, "desktopOnly": true },
+    { "name": "rota", "path": "/rota", "wait": 1200, "desktopOnly": true },
+    { "name": "summary", "path": "/summary", "wait": 1500, "desktopOnly": true }
+  ]
+}
