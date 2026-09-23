@@ -295,6 +295,12 @@ onMounted(load)
   color: var(--primary-strong);
 }
 @media (max-width: 640px) {
+  .visit__icon {
+    display: none;
+  }
+  .visit__head {
+    align-items: flex-start;
+  }
   .visit__body {
     flex-direction: column;
     padding-left: 18px;

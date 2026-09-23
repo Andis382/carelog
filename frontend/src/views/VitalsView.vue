@@ -131,12 +131,6 @@ async function save(value1: number | null, value2: number | null, note: string) 
     <UiNotice v-if="clipped" tone="info">{{ $t('log.limitText') }}</UiNotice>
 
     <UiCard :title="$t(`vitals.kinds.${kind}`)" :subtitle="usual ? $t('vitals.usual', { range: usual }) + ' ' + unit : undefined" :icon="PhChartLine">
-      <template v-if="kind === 'BP'" #actions>
-        <div class="legend">
-          <span class="legend__item"><span class="legend__line" />{{ $t('vitals.systolic') }}</span>
-          <span class="legend__item"><span class="legend__line legend__line--second" />{{ $t('vitals.diastolic') }}</span>
-        </div>
-      </template>
       <UiSkeleton v-if="loading && !history" height="240px" :lines="1" />
       <UiEmpty v-else-if="history && !history.readings.length" compact :icon="PhHeartbeat" :title="$t('vitals.empty')" :text="$t('vitals.emptyText')" />
       <VitalChart
@@ -147,6 +141,10 @@ async function save(value1: number | null, value2: number | null, note: string) 
         :from="history.from"
         :label="$t('vitals.chartLabel', { kind: $t(`vitals.kinds.${kind}`), n: days })"
       />
+      <div v-if="kind === 'BP' && history?.readings.length" class="legend">
+        <span class="legend__item"><span class="legend__line" />{{ $t('vitals.systolic') }}</span>
+        <span class="legend__item"><span class="legend__line legend__line--second" />{{ $t('vitals.diastolic') }}</span>
+      </div>
       <p class="neutral xsmall subtle">{{ $t('vitals.neutral') }}</p>
     </UiCard>
 
@@ -253,6 +251,7 @@ async function save(value1: number | null, value2: number | null, note: string) 
 .legend {
   display: flex;
   gap: 14px;
+  margin-top: 10px;
   font-size: var(--text-xs);
   color: var(--text-muted);
 }
